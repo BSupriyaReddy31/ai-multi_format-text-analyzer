@@ -25,10 +25,10 @@ def extract_text(uploaded_file):
         return str(uploaded_file.read(), "utf-8")
     elif file_type == 'csv':
         df = pd.read_csv(uploaded_file)
-        return df.to_string()
+        return f"TABLE_DATA|{df.to_json()}"
     elif file_type == 'xlsx':
         df = pd.read_excel(uploaded_file)
-        return df.to_string()
+        return f"TABLE_DATA|{df.to_json()}"
     return None
 
 def analyze_text(text):
