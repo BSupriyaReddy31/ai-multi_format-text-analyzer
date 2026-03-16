@@ -7,11 +7,27 @@ from sumy.summarizers.lsa import LsaSummarizer
 import nltk
 from collections import Counter
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+from PIL import Image
+import pytesseract
 
 # 1. Download necessary NLTK resources immediately
 nltk.download('punkt')
 nltk.download('punkt_tab')
 nltk.download('stopwords')
+
+def extract_text_from_url(url):
+    """Scrapes text from a web page."""
+    try:
+        response = requests.get(url, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # Remove script and style elements
+        for script or style in soup(["script", "style"]):
+            script.extract()
+        return soup.get_text(separator=' ')
+    except Exception as e:
+        return f"Error fetching URL: {str(e)}"
 
 def extract_text(uploaded_file):
     file_type = uploaded_file.name.split('.')[-1].lower()
