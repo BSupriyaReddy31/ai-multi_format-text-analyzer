@@ -6,6 +6,7 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 import nltk
 from collections import Counter
+import pandas as pd
 
 # 1. Download necessary NLTK resources immediately
 nltk.download('punkt')
@@ -22,6 +23,12 @@ def extract_text(uploaded_file):
         return "\n".join([para.text for para in doc.paragraphs])
     elif file_type == 'txt':
         return str(uploaded_file.read(), "utf-8")
+    elif file_type == 'csv':
+        df = pd.read_csv(uploaded_file)
+        return df.to_string()
+    elif file_type == 'xlsx':
+        df = pd.read_excel(uploaded_file)
+        return df.to_string()
     return None
 
 def analyze_text(text):
