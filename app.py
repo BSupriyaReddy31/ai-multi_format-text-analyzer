@@ -32,26 +32,29 @@ if uploaded_file is not None:
             
         # ... (inside the Key Insights tab)
         with tab2:
-            st.subheader("🤖 AI-Generated Summary")
-            # We call the function we just imported
-            summary = get_summary(raw_text)
-            st.info(summary)
+            st.subheader("📋 Key Takeaways & Summary")
             
-            st.subheader("🔑 Top Keywords")
-            # We call the keyword function
-            keywords = get_keywords(raw_text)
+            summary_points = get_summary(raw_text)
             
-            if keywords:
-                # This creates nice little buttons for each keyword
-                cols = st.columns(len(keywords))
-                for i, word in enumerate(keywords):
-                    cols[i].button(word, key=f"key_{i}")
-            else:
-                st.write("No specific keywords identified.")
-
+            # Displaying the summary points in a nice container
+            with st.container():
+                for point in summary_points:
+                    if len(point) > 5: # Avoid empty bullets
+                        st.markdown(f"**•** {point}")
+            
             st.divider()
-            # Updated download button to include the summary
-            analysis_data = f"SUMMARY:\n{summary}\n\nKEYWORDS:\n{', '.join(keywords)}"
-            st.download_button("Download Analysis Report", analysis_data, file_name="analysis_report.txt")
+            
+            st.subheader("🔑 Document Keywords")
+            keywords = get_keywords(raw_text)
+            if keywords:
+                # Displays keywords as non-clickable 'tags' using markdown
+                keyword_tags = " ".join([f"`{word.upper()}`" for word in keywords])
+                st.markdown(keyword_tags)
+            
+            # Export Option
+            st.write("")
+            bullet_summary = "\n".join([f"- {p}" for p in summary_points])
+            analysis_data = f"TEXT ANALYSIS REPORT\n{'='*20}\n\nSUMMARY:\n{bullet_summary}\n\nTOP KEYWORDS: {', '.join(keywords)}"
+            st.download_button("📩 Download Full Report", analysis_data, file_name="analysis_report.txt")
     else:
         st.error("Could not read the file. Please check the format.")
