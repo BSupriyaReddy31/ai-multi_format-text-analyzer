@@ -1,7 +1,5 @@
 import streamlit as st
 from utils import extract_text, analyze_text, get_summary, get_keywords
-import pandas as pd
-import altair as alt
 
 # Page Config
 st.set_page_config(page_title="Text Analyzer Pro", layout="wide")
@@ -52,20 +50,7 @@ if uploaded_file is not None:
                 # Displays keywords as non-clickable 'tags' using markdown
                 keyword_tags = " ".join([f"`{word.upper()}`" for word in keywords])
                 st.markdown(keyword_tags)
-                
-            st.subheader("📊 Keyword Frequency")
-            # Get the word counts for the top 5 words
-            word_counts = Counter([w for w in raw_text.lower().split() if w.isalpha() and len(w) > 4]).most_common(5)
-
-            if word_counts:
-                df = pd.DataFrame(word_counts, columns=['Keyword', 'Frequency'])
-                chart = alt.Chart(df).mark_bar().encode( 
-                    x='Frequency',
-                    y=alt.Y('Keyword', sort='-x'),
-                    color=alt.value("#4B8BBE") # A nice professional blue
-                ).properties(height=300)
-                st.altair_chart(chart, use_container_width=True)
-            
+                          
             # Export Option
             st.write("")
             bullet_summary = "\n".join([f"- {p}" for p in summary_points])
