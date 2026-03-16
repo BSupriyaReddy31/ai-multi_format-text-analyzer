@@ -1,48 +1,46 @@
 import streamlit as st
-import pandas as pd  # Fixes the 'pd' error
+import pandas as pd
 import json
-from utils import extract_text, analyze_text, get_summary, get_keywords
+from utils import extract_text, analyze_text, get_summary, get_keywords, extract_text_from_url
 
-# Add a choice at the top
-input_source = st.radio("Select Input Source:", ["📁 Upload File", "🌐 Analyze Website"])
+# 1. Page Config (MUST be at the very top)
+st.set_page_config(page_title="Ultimate Text Analyzer Pro", layout="wide", page_icon="📄")
+
+st.title("🚀 Full-Fledged AI Text Analyzer")
+st.markdown("Analyze documents, images, spreadsheets, or even live websites in seconds.")
+
+# 2. Sidebar for Input Selection
+with st.sidebar:
+    st.header("Settings")
+    input_source = st.radio("Select Input Source:", ["📁 Upload File", "🌐 Analyze Website"])
+    st.info("Supported: PDF, DOCX, TXT, CSV, XLSX, PNG, JPG")
 
 raw_text = ""
 
+# 3. Handle Input Sources
 if input_source == "📁 Upload File":
     uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt", "csv", "xlsx", "png", "jpg", "jpeg"])
     if uploaded_file:
-        with st.spinner("Processing file..."):
+        with st.spinner("🔍 Processing file..."):
             raw_text = extract_text(uploaded_file)
-
 else:
-    url = st.text_input("Enter Website URL (e.g., https://example.com)")
+    url = st.text_input("Enter Website URL (e.g., https://google.com)")
     if url:
-        with st.spinner("Scraping website..."):
-            from utils import extract_text_from_url
+        with st.spinner("🌐 Scraping website..."):
             raw_text = extract_text_from_url(url)
 
-# ... (The rest of your analysis tabs logic remains the same) ...
-
-# Page Config
-st.set_page_config(page_title="Text Analyzer Pro", layout="wide")
-
-st.title("📄 Multi-Format Text Analyzer")
-st.markdown("Upload a **PDF, DOCX, TXT, CSV, or XLSX** file for instant analysis.")
-
-uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt", "csv", "xlsx"])
-
-if uploaded_file is not None:
-    # 1. Extract Text
-    with st.spinner("Processing file..."):
-        raw_text = extract_text(uploaded_file)
-    
-    if raw_text:
-        # Initialize variables to avoid NameErrors
+# 4. Main Analysis Logic
+if raw_text:
+    # Check if we got an error message from the scraper/extractor
+    if raw_text.startswith("Error"):
+        st.error(raw_text)
+    else:
+        # Initialize variables
         summary_points = []
         keywords = []
         
-        # 2. Setup Tabs
-        tab1, tab2 = st.tabs(["📁 Data Preview", "📊 Analysis Results"])
+        # Setup Tabs
+        tab1, tab2 = st.tabs(["📁 Data Content", "📊 Analysis Insights"])
         
         with tab1:
             if raw_text.startswith("TABLE_DATA|"):
@@ -50,7 +48,7 @@ if uploaded_file is not None:
                 df = pd.DataFrame(data)
                 st.dataframe(df, width='stretch')
             else:
-                st.text_area("File Content", raw_text, height=300)
+                st.text_area("Extracted Content", raw_text, height=400)
             
         with tab2:
             if raw_text.startswith("TABLE_DATA|"):
@@ -60,14 +58,13 @@ if uploaded_file is not None:
                 
                 st.write(f"🔹 **Total Records:** {len(df)} rows")
                 st.write(f"🔹 **Columns Found:** {', '.join(df.columns)}")
-                st.subheader("📈 Statistics")
+                st.subheader("📈 Column Statistics")
                 st.write(df.describe(include='all').transpose())
                 
-                # For download report
                 summary_points = [f"Table with {len(df)} rows and {len(df.columns)} columns."]
                 keywords = list(df.columns[:5])
             else:
-                # Narrative Text Analysis
+                # Narrative Analysis
                 analysis = analyze_text(raw_text)
                 
                 col1, col2, col3 = st.columns(3)
@@ -84,10 +81,11 @@ if uploaded_file is not None:
                 if keywords:
                     st.markdown(" ".join([f"`{w.upper()}`" for w in keywords]))
 
-            # 3. Export Option (Now safe from NameErrors)
-            st.divider()
-            bullet_summary = "\n".join([f"- {p}" for p in summary_points])
-            analysis_data = f"TEXT ANALYSIS REPORT\n{'='*20}\n\nSUMMARY:\n{bullet_summary}\n\nKEYWORDS: {', '.join(keywords)}"
-            st.download_button("📩 Download Full Report", analysis_data, file_name="analysis_report.txt")
-    else:
-        st.error("Could not read the file. Please check the format.")
+        # 5. Export Section
+        st.divider()
+        bullet_summary = "\n".join([f"- {p}" for p in summary_points])
+        analysis_data = f"TEXT ANALYSIS REPORT\n{'='*20}\n\nSUMMARY:\n{bullet_summary}\n\nKEYWORDS: {', '.join(keywords)}"
+        st.download_button("📩 Download Full Report", analysis_data, file_name="analysis_report.txt")
+else:
+    st.write("---")
+    st.info("Waiting for input... Please upload a file or enter a URL to begin analysis.")
