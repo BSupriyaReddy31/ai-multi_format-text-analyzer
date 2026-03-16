@@ -3,6 +3,26 @@ import pandas as pd  # Fixes the 'pd' error
 import json
 from utils import extract_text, analyze_text, get_summary, get_keywords
 
+# Add a choice at the top
+input_source = st.radio("Select Input Source:", ["📁 Upload File", "🌐 Analyze Website"])
+
+raw_text = ""
+
+if input_source == "📁 Upload File":
+    uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt", "csv", "xlsx", "png", "jpg", "jpeg"])
+    if uploaded_file:
+        with st.spinner("Processing file..."):
+            raw_text = extract_text(uploaded_file)
+
+else:
+    url = st.text_input("Enter Website URL (e.g., https://example.com)")
+    if url:
+        with st.spinner("Scraping website..."):
+            from utils import extract_text_from_url
+            raw_text = extract_text_from_url(url)
+
+# ... (The rest of your analysis tabs logic remains the same) ...
+
 # Page Config
 st.set_page_config(page_title="Text Analyzer Pro", layout="wide")
 
