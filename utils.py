@@ -34,20 +34,32 @@ def analyze_text(text):
         "sentiment_label": "Positive" if sentiment > 0.1 else "Negative" if sentiment < -0.1 else "Neutral"
     }
 
-def get_summary(text, sentences_count=3):
+def get_summary(text, sentences_count=5):
+    """Summarizes the content into distinct key points."""
     try:
-        if len(text.split()) < 30:
-            return text
+        # Clean text: remove extra whitespace to help the parser
+        clean_text = " ".join(text.split())
         
-        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        if len(clean_text.split()) < 40:
+            return ["Document is too short for a multi-point summary."]
+
+        # Use the PlaintextParser to process the overall text
+        parser = PlaintextParser.from_string(clean_text, Tokenizer("english"))
         summarizer = LsaSummarizer()
+        
+        # LSA (Latent Semantic Analysis) identifies the 'themes' across the whole file
         summary = summarizer(parser.document, sentences_count)
         
-        result = " ".join([str(sentence) for sentence in summary])
-        return result if result else text[:300] + "..."
-    except Exception:
-        # Fallback if summarizer fails
-        return " ".join(text.split()[:50]) + "..."
+        points = [str(sentence).strip() for sentence in summary]
+        
+        # If the summarizer returns nothing, we manually extract significant sentences
+        if not points:
+            sentences = [s.strip() for s in clean_text.split('.') if len(s) > 20]
+            return sentences[:sentences_count]
+            
+        return points
+    except Exception as e:
+        return [f"Analysis interrupted: {str(e)}"]
 
 def get_keywords(text):
     from nltk.corpus import stopwords
