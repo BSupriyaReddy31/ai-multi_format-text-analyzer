@@ -44,23 +44,38 @@ def analyze_text(text):
     return results
 
 def get_summary(text, sentences_count=3):
-    """Extracts the most important sentences using LSA Summarization."""
+    """Improved summary logic."""
     try:
-        if len(text.split()) < 20:
-            return text # Don't summarize very short text
+        # If text is too short, just return the text itself
+        if len(text.split()) < 50:
+            return text 
+            
         parser = PlaintextParser.from_string(text, Tokenizer("english"))
         summarizer = LsaSummarizer()
         summary = summarizer(parser.document, sentences_count)
+        
+        # If summarizer fails to pick sentences, fall back to first few
+        if not summary:
+            return " ".join(text.split()[:50]) + "..."
+            
         return " ".join([str(sentence) for sentence in summary])
-    except:
-        return "Text structure not recognized for summarization."
+    except Exception as e:
+        return f"Could not summarize: {str(e)}"
 
 def get_keywords(text):
-    """Identifies the top 5 most frequent meaningful words."""
+    """Uses a more robust stop-word filter."""
+    import nltk
+    from nltk.corpus import stopwords
+    nltk.download('stopwords')
+    
+    stop_words = set(stopwords.words('english'))
+    # Add custom words that you keep seeing but don't want
+    custom_stops = {'which', 'through', 'from', 'also', 'using', 'used', 'would'}
+    stop_words.update(custom_stops)
+    
     words = text.lower().split()
-    # Basic list of words to ignore
-    stop_words = set(['the', 'and', 'is', 'in', 'it', 'of', 'to', 'for', 'with', 'a', 'this', 'that', 'was', 'on', 'as', 'an'])
-    filtered_words = [w for w in words if w.isalpha() and w not in stop_words and len(w) > 2]
+    # Only keep words that are alphabetic, not in stop_words, and longer than 3 chars
+    filtered_words = [w for w in words if w.isalpha() and w not in stop_words and len(w) > 3]
     
     most_common = Counter(filtered_words).most_common(5)
     return [word for word, count in most_common]
