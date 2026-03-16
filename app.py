@@ -30,11 +30,20 @@ if uploaded_file is not None:
         with tab1:
             st.text_area("File Content", raw_text, height=300)
             
+        # ... (inside the Key Insights tab)
         with tab2:
-            st.subheader("Text Preview (First 500 chars)")
-            st.write(raw_text[:500] + "...")
+            st.subheader("🤖 AI-Generated Summary")
+            summary = get_summary(raw_text)
+            st.info(summary)
             
+            st.subheader("🔑 Top Keywords")
+            keywords = get_keywords(raw_text)
+            cols = st.columns(len(keywords))
+            for i, word in enumerate(keywords):
+                cols[i].button(word, key=i) # Displays keywords as clickable tags
+
             # Export Option
-            st.download_button("Download Raw Text", raw_text, file_name="extracted_text.txt")
+            st.divider()
+            st.download_button("Download Full Analysis", f"Summary:\n{summary}\n\nKeywords: {', '.join(keywords)}", file_name="analysis.txt")
     else:
         st.error("Could not read the file. Please check the format.")
