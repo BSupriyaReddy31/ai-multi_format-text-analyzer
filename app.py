@@ -7,7 +7,7 @@ st.set_page_config(page_title="Text Analyzer Pro", layout="wide")
 st.title("📄 Multi-Format Text Analyzer")
 st.markdown("Upload a **PDF, DOCX, or TXT** file to analyze its content instantly.")
 
-uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt"])
+uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt", "csv", "xlsx"])
 
 if uploaded_file is not None:
     # 1. Extract Text
