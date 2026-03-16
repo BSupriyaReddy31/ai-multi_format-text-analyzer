@@ -1,5 +1,6 @@
 import streamlit as st
 from utils import extract_text, analyze_text, get_summary, get_keywords
+import pandas as pd
 
 # Page Config
 st.set_page_config(page_title="Text Analyzer Pro", layout="wide")
