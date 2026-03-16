@@ -18,34 +18,36 @@ nltk.download('punkt_tab')
 nltk.download('stopwords')
 
 def extract_text_from_url(url):
-    """Scrapes text from a web page."""
+    """Fetches text from a webpage."""
     try:
-        response = requests.get(url, timeout=10)
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
-        # Remove script and style elements
-        for script or style in soup(["script", "style"]):
-            script.extract()
+        for s in soup(['script', 'style']): s.extract()
         return soup.get_text(separator=' ')
     except Exception as e:
-        return f"Error fetching URL: {str(e)}"
+        return f"Error: {str(e)}"
 
 def extract_text(uploaded_file):
+    """Handles multiple file formats including Images."""
     file_type = uploaded_file.name.split('.')[-1].lower()
+    
     if file_type == 'pdf':
         reader = PyPDF2.PdfReader(uploaded_file)
-        return "".join([page.extract_text() for page in reader.pages])
+        return "".join([p.extract_text() for p in reader.pages])
     elif file_type == 'docx':
         doc = Document(uploaded_file)
-        return "\n".join([para.text for para in doc.paragraphs])
-    elif file_type == 'txt':
-        return str(uploaded_file.read(), "utf-8")
+        return "\n".join([p.text for p in doc.paragraphs])
+    elif file_type in ['png', 'jpg', 'jpeg']:
+        return pytesseract.image_to_string(Image.open(uploaded_file))
     elif file_type == 'csv':
         df = pd.read_csv(uploaded_file)
         return f"TABLE_DATA|{df.to_json()}"
     elif file_type == 'xlsx':
         df = pd.read_excel(uploaded_file)
         return f"TABLE_DATA|{df.to_json()}"
-    return None
+    else: # Default for txt
+        return str(uploaded_file.read(), "utf-8")
 
 def analyze_text(text):
     blob = TextBlob(text)
