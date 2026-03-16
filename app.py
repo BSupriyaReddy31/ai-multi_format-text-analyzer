@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import extract_text, analyze_text
+from utils import extract_text, analyze_text, get_summary, get_keywords
 
 # Page Config
 st.set_page_config(page_title="Text Analyzer Pro", layout="wide")
@@ -33,17 +33,25 @@ if uploaded_file is not None:
         # ... (inside the Key Insights tab)
         with tab2:
             st.subheader("🤖 AI-Generated Summary")
+            # We call the function we just imported
             summary = get_summary(raw_text)
             st.info(summary)
             
             st.subheader("🔑 Top Keywords")
+            # We call the keyword function
             keywords = get_keywords(raw_text)
-            cols = st.columns(len(keywords))
-            for i, word in enumerate(keywords):
-                cols[i].button(word, key=i) # Displays keywords as clickable tags
+            
+            if keywords:
+                # This creates nice little buttons for each keyword
+                cols = st.columns(len(keywords))
+                for i, word in enumerate(keywords):
+                    cols[i].button(word, key=f"key_{i}")
+            else:
+                st.write("No specific keywords identified.")
 
-            # Export Option
             st.divider()
-            st.download_button("Download Full Analysis", f"Summary:\n{summary}\n\nKeywords: {', '.join(keywords)}", file_name="analysis.txt")
+            # Updated download button to include the summary
+            analysis_data = f"SUMMARY:\n{summary}\n\nKEYWORDS:\n{', '.join(keywords)}"
+            st.download_button("Download Analysis Report", analysis_data, file_name="analysis_report.txt")
     else:
         st.error("Could not read the file. Please check the format.")
