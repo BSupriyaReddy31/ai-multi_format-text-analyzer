@@ -25,22 +25,36 @@ if uploaded_file is not None:
         col3.metric("Sentiment", analysis["sentiment_label"], delta=analysis["sentiment_score"])
         
         # 4. Show Content Tabs
-        tab1, tab2 = st.tabs(["Raw Content", "Key Insights"])
+        tab1, tab2 = st.tabs(["📁 Data Preview", "📊 Analysis Results"])
         
         with tab1:
-            st.text_area("File Content", raw_text, height=300)
+            if raw_text.startswith("TABLE_DATA|"):
+                # Convert back to DataFrame for display
+                import json
+                data = json.loads(raw_text.split("|")[1])
+                df = pd.DataFrame(data)
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.text_area("File Content", raw_text, height=300)
             
-        # ... (inside the Key Insights tab)
         with tab2:
-            st.subheader("📋 Key Takeaways & Summary")
-            
-            summary_points = get_summary(raw_text)
-            
-            # Displaying the summary points in a nice container
-            with st.container():
+            if raw_text.startswith("TABLE_DATA|"):
+                st.subheader("📋 Spreadsheet Insights")
+                import json
+                data = json.loads(raw_text.split("|")[1])
+                df = pd.DataFrame(data)
+                
+                st.write(f"🔹 **Total Records:** {len(df)} rows")
+                st.write(f"🔹 **Columns Found:** {', '.join(df.columns)}")
+                
+                st.subheader("📈 Column Statistics")
+                st.write(df.describe(include='all').transpose())
+            else:
+                # Use your existing summary_points logic for PDF/DOCX
+                st.subheader("📋 Key Takeaways")
+                summary_points = get_summary(raw_text)
                 for point in summary_points:
-                    if len(point) > 5: # Avoid empty bullets
-                        st.markdown(f"**•** {point}")
+                    st.write(f"🔹 {point}")
             
             st.divider()
             
